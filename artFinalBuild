@@ -1,0 +1,584 @@
+# artFinalBuild.py
+# created by Sam Foreman 7/26/2016
+
+from cs111png import *
+import random
+import time
+import os
+
+
+
+### MAIN & SETUP FUNCTIONS ###
+
+def main():
+    """ get parameters for creating image
+    """
+    print("welcome to the art generator (v4)")
+    print("note: for all inputs, enter the number to the left of the desired command")
+    print("1. custom generation (full control over image parameters)")
+    print("2. easy generation (choose type, size, and # of images only)")
+    print("3. random generation (completely randomize all parameters)")
+    command = input("enter command: ")
+
+    while command != "1" and command != "2" and command != "3":
+        print("error. invalid input")
+        command = input("enter command: ")
+    else:
+        parameters(command)
+
+def parameters(gen):
+    """ sets or asks for the parameters to be used when generating
+    """
+    print()
+    # get image name
+    filename = input("enter filename, or leave blank for random: ")
+    if filename == "":
+        filename = str(random.randint(11111, 99999))
+        
+    # if gen = custom, get all parameters
+    if gen == "1":
+        imgType = getType()
+        imgSize = getSize()
+        height = imgSize[0]
+        width = imgSize[1]
+        genColors = getColors()
+        red = genColors[0]
+        blue = genColors[1]
+        green = genColors[2]
+        roughness = getRoughness()
+        clarity = 6 - getClarity()
+        brightness = getBrightness()
+        num = getNum()
+   #     red = checkColor(red * (brightness / 10))
+#        blue = checkColor(blue * (brightness / 10))
+#        green = checkColor(green * (brightness / 10))
+        
+        if imgType == "1":
+            if num == 1:
+                texture(height, width, red, blue, green, roughness, clarity, brightness, filename, filename)
+            else:
+                for i in range(num):
+                    imgFilename = filename + "_" + str(i+1)
+                    texture(height, width, red, blue, green, roughness, clarity, brightness, imgFilename, filename)
+        elif imgType == "2":
+            streak(height, width, red, blue, green, roughness, clarity, brightness, filename, num)
+
+
+        
+    # if gen = easy, only get type, size, and number of images
+    elif gen == "2":
+        imgType = getType()
+        imgSize = getSize()
+        height = imgSize[0]
+        width = imgSize[1]
+        num = getNum()
+        for i in range(num):
+            red = checkColor(random.randint(0, 255) + random.randint(0, 75))
+            green = checkColor(random.randint(0, 255) + random.randint(0, 75))
+            blue = checkColor(random.randint(0, 255) + random.randint(0, 75))
+            roughness = random.randint(5, 30)
+            clarity = random.randint(3, 5)
+            brightness = random.randint(5, 10)
+            if num == 1:
+                texture(height, width, red, blue, green, roughness, clarity, brightness, filename, filename)
+            else:
+                imgFilename = filename + "_" + str(i+1)
+#                texture(height, width, red, blue, green, roughness, clarity, brightness, imgFilename, filename)
+                streak(height, width, red, blue, green, roughness, clarity, brightness, filename, num)
+
+    else:
+        imgType = "1"
+        height = 256
+        width = 256
+        num = 5
+        for i in range(num):
+            brightness = random.randint(1,10)
+            red = checkColor(random.randint(0, 300) * (brightness / 10))
+            green = checkColor(random.randint(0, 300) * (brightness / 10))
+            blue = checkColor(random.randint(0,300) * (brightness / 10))
+            roughness = random.randint(1,30)
+            clarity = random.randint(1,5)
+            if num == 1:
+                texture(height, width, red, blue, green, roughness, clarity, brightness, filename, filename)
+            else:
+                imgFilename = filename + "_" + str(i+1)
+                texture(height, width, red, blue, green, roughness, clarity, brightness, imgFilename, filename)
+                                  
+
+
+
+### HELPER FUNCTIONS ###   
+
+def getType():
+    """ returns the desired genType
+    """
+    print("select image type: ")
+    print("1. texture")
+    print("2. streak")
+    re = input("enter command: ")
+    while re != "1" and re != "2":
+        print("error. invalid input")
+        re = input("enter command: ")
+    return re
+
+def getSize():
+    """ returns the desired height and width
+    """
+    re = []
+    x = int(input("enter image height (between 10 and 9999): "))
+    while x < 10 or x > 9999:
+        print("error. invalid input")
+        x = int(input("enter image height: "))
+    re += [x]
+    y = int(input("enter image width (between 10 and 9999): "))
+    while y < 10 or y > 9999:
+        print("error. invalid input")
+        y = int(input("enter image width: "))
+    re += [y]
+    return re
+
+def getColors():
+    """ returns the desired red, green, and blue amounts
+    """
+    print("1. use full color spectrum")
+    print("2. use custom color amounts")
+    command = input("enter command: ")
+    while command != "1" and command != "2":
+        print("error. invalid input")
+        command = input("enter command: ")
+    if command == "1":
+        return [255, 255, 255]
+    else:
+        re = []
+        r = int(input("enter amount of red (between 0 and 255): "))
+        while r < 0 or r > 255:
+            print("error. invalid input")
+            r = int(input("enter amount of red: "))
+        re += [r]
+        b = int(input("enter amount of blue (between 0 and 255): "))
+        while b < 0 or b > 255:
+            print("error. invalid input")
+            b = int(input("enter amount of blue: "))
+        re += [b]
+        g = int(input("enter amount of green (between 0 and 255): "))
+        while g < 0 or g > 255:
+            print("error. invalid input")
+            g = int(input("enter amount of green: "))
+        re += [g]
+        return re
+    
+def getRoughness():
+    """ returns the desired image roughness
+    """
+    x = int(input("enter image roughness from 1 (smoothest) to 30 (roughest)): "))
+    while x < 1 or x > 30:
+        print("error. invalid input")
+        x = int(input("enter image roughness: "))
+    return x
+
+def getClarity():
+    """ returns the desired image clarity
+    """
+    x = int(input("enter image clarity from 1 (unclear) to 5 (clearest)): "))
+    while x < 1 or x > 5:
+        print("error. invalid input")
+        x = int(input("enter image clarity: "))
+    return x
+
+def getBrightness():
+    """ returns the desired image brightness
+    """
+    x = int(input("enter image brightness from 1 (darkest) to 10 (brightest)) or 10 for default: "))
+    while x < 1 or x > 10:
+        print("error. invalid input")
+        x = int(input("enter image brightness: "))
+    #return convertBrightness(x)
+    return x
+
+def getNum():
+    """ returns the number of images to create
+    """
+    x = int(input("enter number of images to create (between 1 and 100): "))
+    while x < 1 or x > 100:
+        print("error. invalid input")
+        x = int(input("enter image clarity: "))
+    return x
+
+
+### CREATION FUNCTIONS ###
+
+
+def texture(height, width, red, blue, green, roughness, clarity, brightness, imgFilename, txtFilename):
+    """ creates an image using the texture method
+    """
+    print()
+    print("creating image. please wait...")
+    # create image
+    img = Image(height, width)
+
+    # initialize list of previous pixel locations
+    pDict = {}
+    counter = 0
+    for r in range(height):
+        for c in range(width):
+            pDict[counter] = [r, c]
+            counter += 1
+
+    pList = []
+    # figure out what this does
+    pList += random.sample(list(pDict.values()), len(pDict))
+
+    # initialize counter (how many pixels have been drawn)
+    counter = 0
+
+    # set initial pixel
+    pixelRed = checkColor(random.randint(0, red))
+    pixelGreen = checkColor(random.randint(0, green))
+    pixelBlue = checkColor(random.randint(0, blue))
+    pixel = [pixelRed, pixelGreen, pixelBlue]
+
+# now here's the fun part
+    for row in range(height):
+        
+        # progress counter
+        if row == int((.2 * height)):
+            print("25% done")
+        elif row == int((.5 * height)):
+            print("50% done")
+        elif row == int((.9 * height)):
+            print("75% done")
+
+        for col in range(width):
+
+            # use the roughness to seed the amount of change
+#               rNum = random.randint(-int(roughness * brightness[0]), roughness)
+ #           rNum = random.randint(-random.randint(1, roughness), random.randint(1, roughness))
+            rNum = random.randint(-roughness, roughness)
+            # check locations of surrounding pixels
+            averageRed = 0
+            averageGreen = 0
+            averageBlue = 0
+            averageCount = 0
+
+            # don't know why these values are all [0, 255, 0]
+            # but hey it works so whatever
+            pixelUp = [0, 255, 0]
+            pixelDown = [0, 255, 0]
+            pixelLeft = [0, 255, 0]
+            pixelRight = [0, 255, 0]
+            pixelUpLeft = [0, 255, 0]
+            pixelDownLeft = [0, 255, 0]
+            pixelUpRight = [0, 255, 0]
+            pixelDownRight = [0, 255, 0]
+
+            pValue = pList[counter]
+            # clarity variable
+            for i in range(clarity):
+                if pValue[0] > 0 + i:
+                    pixelUp = img.get_pixel(pValue[0] - (i+1), pValue[1])
+                if pValue[0] < height - (i + 1):
+                    pixelDown = img.get_pixel(pValue[0] + (i+1), pValue[1])
+                if pValue[1] > 0 + i:
+                    pixelLeft = img.get_pixel(pValue[0], pValue[1] - (i+1))
+                if pValue[1] < width - (i + 1):
+                    pixelRight = img.get_pixel(pValue[0], pValue[1] + (i+1))
+                    
+                if pValue[0] > (0 + i) and pValue[1] > (0 + i):
+                    pixelUpLeft = img.get_pixel(pValue[0] - (i+1), pValue[1] - (i + 1))
+                if pValue[0] < height - (i + 1) and pValue[1] > (0 + i):
+                    pixelDownLeft = img.get_pixel(pValue[0] + (i+1), pValue[1] - (i+1))
+                if pValue[0] > (0+i) and pValue[1] < width - (i+1):
+                    pixelUpRight = img.get_pixel(pValue[0] - (i+1), pValue[1] + (i+1))
+                if pValue[0] < height - (i+1) and pValue[1] < width - (i+1):
+                    pixelDownRight = img.get_pixel(pValue[0] + (i+1), pValue[1] + (i+1))
+
+            # add up average pixels
+                val1 = 1
+                val2 = .4
+                val3 = 1.5
+                if pixelUp[1] != 255:
+                    averageRed += pixelUp[0]
+                    averageGreen += pixelUp[1]
+                    averageBlue += pixelUp[2]
+                    averageCount += val1
+                if pixelDown[1] != 255:
+                    averageRed += pixelDown[0]
+                    averageGreen += pixelDown[1]
+                    averageBlue += pixelDown[2]
+                    averageCount += val1
+                if pixelLeft[1] != 255:
+                    averageRed += pixelLeft[0]
+                    averageGreen += pixelLeft[1]
+                    averageBlue += pixelLeft[2]
+                    averageCount += val1
+                if pixelRight[1] != 255:
+                    averageRed += pixelRight[0]
+                    averageGreen += pixelRight[1]
+                    averageBlue += pixelRight[2]
+                    averageCount += val1
+                    
+                if pixelUpLeft[1] != 255:
+                    averageRed += pixelUpLeft[0]
+                    averageGreen += pixelUpLeft[1]
+                    averageBlue += pixelUpLeft[2]
+                    averageCount += val1
+                if pixelDownLeft[1] != 255:
+                    averageRed += pixelDownLeft[0]
+                    averageGreen += pixelDownLeft[1]
+                    averageBlue += pixelDownLeft[2]
+                    averageCount += val1
+                if pixelUpRight[1] != 255:
+                    averageRed += pixelUpRight[0]
+                    averageGreen += pixelUpRight[1]
+                    averageBlue += pixelUpRight[2]
+                    averageCount += val1
+                if pixelDownRight[1] != 255:
+                    averageRed += pixelDownRight[0]
+                    averageGreen += pixelDownRight[1]
+                    averageBlue += pixelDownRight[2]
+                    averageCount += val1
+            
+            if averageCount > 0:
+                pixelAverage = [averageRed / averageCount, averageGreen / averageCount, averageBlue / averageCount]
+                pixelRed = pixelAverage[0]
+                pixelGreen = pixelAverage[1]
+                pixelBlue = pixelAverage[2]
+##                if random.randint(0, 1) == 1:
+##                    rNum = random.randint(-roughness, -int(roughness / 3))
+##                else:
+##                    rNum = random.randint(int(roughness / 3), roughness)
+
+                rNum = random.randint(-roughness, roughness)
+
+
+            # set new red
+            nPixelRed = pixelRed + rNum
+            if nPixelRed > red:
+                nPixelRed = red
+            if nPixelRed < 0:
+                 nPixelRed = 0
+
+            # set new green
+            nPixelGreen = pixelGreen + rNum
+            if nPixelGreen > green:
+                nPixelGreen = green
+            if nPixelGreen < 0:
+                 nPixelGreen = 0
+
+            # set new blue
+            nPixelBlue = pixelBlue + rNum
+            if nPixelBlue > blue:
+                nPixelBlue = blue
+            if nPixelBlue < 0:
+                 nPixelBlue = 0
+
+
+            
+            nPixel = [int(nPixelRed), int(nPixelGreen), int(nPixelBlue)]
+
+
+            # draw pixel in random location
+            img.set_pixel(pValue[0], pValue[1], nPixel)
+
+            # change pixel to the new one
+            pixelRed = nPixelRed
+            pixelGreen = nPixelGreen
+            pixelBlue = nPixelBlue
+
+            # and finally...increment the counter
+            counter += 1
+
+    # save image
+        
+    x = "image generator (v4)\nby sam foreman\n\nfilename: %s\ntype:%s\nheight: %d\nwidth: %d\nred: %d\nblue: %d\ngreen: %d\nroughness: %d\nclarity: %d\nbrightness: %d\n\n" % (imgFilename, "texture", height, width, red, blue, green, roughness, 6 - clarity, brightness)
+    save(img, txtFilename, imgFilename, x)
+    
+
+def streak(height, width, red, blue, green, roughness, clarity, brightness, imgFilename, num):
+    """ creates an image using the streak method
+    """
+    # create image
+    img = Image(height, width)
+    print("%20 done.")
+    pixelRed = random.randint(0, red)
+    pixelGreen = random.randint(0, green)
+    pixelBlue = random.randint(0, blue)
+    pixel = [pixelRed, pixelGreen, pixelBlue]
+
+    # begin coloring
+    # streak colors in order from the top left
+    # (as opposed to texture which randomly fills in pixels
+
+    img.set_pixel(0, 0, pixel)
+
+    for r in range(height):
+        if r == .25 * height:
+            print("40% done.")
+        elif r == .50 * height:
+            print("60% done.")
+        elif r == .75 * height:
+            print("80% done.")
+        for c in range(width):
+            randomSeed = random.randint(5,5)
+
+            # set pixel if on the first row
+            if r == 0:
+                random1 = random.randint(-randomSeed, randomSeed)
+                random2 = random.randint(-randomSeed, randomSeed)
+                random3 = random.randint(-randomSeed, randomSeed)
+                if pixelRed == red:
+                    redLock = 3
+                if pixelGreen == green:
+                    greenLock = 3
+                if pixelBlue == blue:
+                    blueLock = 3
+                    
+                if pixelRed + random1 < 0:
+                    new_pixelRed = abs(pixelRed + random1)
+                elif pixelRed + random1 > red:
+                    new_pixelRed = pixelRed - random1
+                else:
+                    new_pixelRed = pixelRed + random1
+##                        if redLock == 0:
+##                            new_pixelRed = pixelRed + random1
+##                        else:
+##                            new_pixelRed = pixelRed - random1
+##                            redLock -= 1
+                    
+                if pixelGreen + random2 < 0:
+                    new_pixelGreen = abs(pixelGreen + random2)
+                elif pixelGreen + random2 > green:
+                    new_pixelGreen = pixelGreen - random2
+                else:
+                    new_pixelGreen = pixelGreen + random2
+##                        if greenLock == 0:
+##                            new_pixelGreen = pixelGreen + random2
+##                        else:
+##                            new_pixelGreen = pixelGreen - random2
+##                            greenLock -= 1
+                    
+                if pixelBlue + random3 < 0:
+                    new_pixelBlue = abs(pixelBlue + random3)
+                elif pixelBlue + random3 > blue:
+                    new_pixelBlue = pixelBlue - random3
+                else:
+                    new_pixelBlue = pixelBlue + random3
+##                        if blueLock == 0:
+##                            new_pixelBlue = pixelBlue + random3
+##                        else:
+##                            new_pixelBlue = pixelBlue - random3
+##                            blueLock -= 1
+
+            # set pixels if not on the first row
+            else:
+                randomUp1 = random.randint(-randomSeed, randomSeed)
+                randomUp2 = random.randint(-randomSeed, randomSeed)
+                randomUp3 = random.randint(-randomSeed, randomSeed)
+                pixelUp = img.get_pixel(r - 1, c)
+                pixelRed = pixelUp[0]
+                pixelGreen = pixelUp[1]
+                pixelBlue = pixelUp[2]
+                
+                if c != 0:
+                    pixelLeft = img.get_pixel(r, c - 1)
+                    pixelLeftRed = pixelLeft[0]
+                    pixelLeftGreen = pixelLeft[1]
+                    pixelLeftBlue = pixelLeft[2]
+                    pixelRed = (pixelLeftRed + pixelRed) // 2
+                    pixelGreen = (pixelLeftGreen + pixelGreen) // 2
+                    pixelBlue = (pixelLeftBlue + pixelBlue) // 2 
+                
+                if pixelRed == red:
+                    redLock = 3
+                if pixelGreen == green:
+                    greenLock = 3
+                if pixelBlue == blue:
+                    blueLock = 3
+                    
+                if c == 0:
+                    if pixelRed + random1 < 0:
+                        new_pixelRed = abs(pixelRed + random1)
+                    elif pixelRed + random1 > red:
+                        new_pixelRed = pixelRed - random1
+                    else:
+                        new_pixelRed = pixelRed + random1
+##                        if redLock == 0:
+##                            new_pixelRed = pixelRed + random1
+##                        else:
+##                            new_pixelRed = pixelRed - random1
+##                            redLock -= 1
+                        
+                    if pixelGreen + random2 < 0:
+                        new_pixelGreen = abs(pixelGreen + random2)
+                    elif pixelGreen + random2 > green:
+                        new_pixelGreen = pixelGreen - random2
+                    else:
+                        new_pixelGreen = pixelGreen + random2
+##                        if greenLock == 0:
+##                            new_pixelGreen = pixelGreen + random2
+##                        else:
+##                            new_pixelGreen = pixelGreen - random2
+##                            greenLock -= 1
+
+                        
+                    if pixelBlue + random3 < 0:
+                        new_pixelBlue = abs(pixelBlue + random3)
+                    elif pixelBlue + random3 > blue:
+                        new_pixelBlue = pixelBlue - random3
+                    else:
+                        new_pixelBlue = pixelBlue + random3
+##                        if blueLock == 0:
+##                            new_pixelBlue = pixelBlue + random3
+##                        else:
+##                            new_pixelBlue = pixelBlue - random3
+               ##blueLock -= 1
+                    
+                    
+            # write pixels to image
+            pixel = [new_pixelRed, new_pixelGreen, new_pixelBlue]
+            img.set_pixel(r, c, pixel)
+            pixelRed = new_pixelRed
+            pixelGreen = new_pixelGreen
+            pixelBlue = new_pixelBlue
+        
+
+# save image
+    x = "image generator (v4)\nby sam foreman\n\nfilename: %s\ntype:%s\nheight: %d\nwidth: %d\nred: %d\nblue: %d\ngreen: %d\nroughness: %d\nclarity: %d\nbrightness: %d\n\n" % (imgFilename, "streak", height, width, red, blue, green, roughness, 6 - clarity, brightness)
+    save(img, imgFilename, imgFilename, x)
+
+
+    
+
+def save(img, txtFilename, imgFilename, txt):
+    print()
+    print("saving information...")
+    path = os.getcwd() + "/descriptions/"
+    f = open(path + txtFilename + ".txt", "a")
+    f.write(txt)
+    f.close()
+    path = os.getcwd() + "/images/"
+ #   path = "/Users/sam/Programming/Python/ArtGenerator/images/"
+    print(txtFilename + ".txt" + " saved")
+    print("saving image...")
+    img.save(path + imgFilename + ".png")
+
+def cleanFilename(filename):
+    if  len(filename) >= 7 and filename[-2] == "_":
+        return filename[:-2]
+    elif len(filename) >= 8 and filename[-3] == "_":
+        return filename[:-3]
+    elif len(filename) >= 9 and filename[-4] == "_":
+        return filename[:-4]
+    else:
+        return filename
+
+def checkColor(color):
+    color = int(color)
+    if color > 255:
+        return 255
+    elif color < 0:
+        return 0
+    else:
+        return color
+
+
